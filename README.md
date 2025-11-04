@@ -1,71 +1,213 @@
-# Introduction
+# PHP Microservice Boilerplate
 
-This is a PHP microservice built with the [Hyperf](https://hyperf.io) framework. Hyperf is a high-performance, coroutine-based PHP framework optimized for building microservices and API applications.
+A high-performance PHP microservice boilerplate built with [Hyperf](https://hyperf.io), a coroutine-based framework optimized for building modern microservices and APIs.
 
-For complete documentation, visit: [https://hyperf.wiki](https://hyperf.wiki)
+## Documentation
 
-# Requirements
+- Official Documentation: [https://hyperf.wiki](https://hyperf.wiki)
+- Hyperf Website: [https://hyperf.io](https://hyperf.io)
 
-Hyperf has some requirements for the system environment, it can only run under Linux and Mac environment, but due to the development of Docker virtualization technology, Docker for Windows can also be used as the running environment under Windows.
+## Requirements
 
-The various versions of Dockerfile have been prepared for you in the [hyperf/hyperf-docker](https://github.com/hyperf/hyperf-docker) project, or directly based on the already built [hyperf/hyperf](https://hub.docker.com/r/hyperf/hyperf) Image to run.
+- **PHP >= 8.1**
+- **Swoole PHP extension >= 5.0** with `swoole.use_shortname` set to `Off` in `php.ini`
+  - Or **Swow PHP extension >= 1.3** as an alternative
+- **Required PHP Extensions:**
+  - JSON
+  - Pcntl
+  - OpenSSL (for HTTPS)
+  - PDO (for MySQL Client)
+  - Redis (for Redis Client)
+  - Protobuf (for gRPC Server or Client)
 
-When you don't want to use Docker as the basis for your running environment, you need to make sure that your operating environment meets the following requirements:  
+**Recommended:** Use Docker for consistent development and production environments.
 
- - PHP >= 8.1
- - Any of the following network engines
-   - Swoole PHP extension >= 5.0，with `swoole.use_shortname` set to `Off` in your `php.ini`
-   - Swow PHP extension >= 1.3
- - JSON PHP extension
- - Pcntl PHP extension
- - OpenSSL PHP extension （If you need to use the HTTPS）
- - PDO PHP extension （If you need to use the MySQL Client）
- - Redis PHP extension （If you need to use the Redis Client）
- - Protobuf PHP extension （If you need to use the gRPC Server or Client）
+## Directory Structure
 
-# Getting Started
+```
+.
+├── app/
+│   ├── Amqp/              # AMQP message queue handlers
+│   │   ├── Consumer/      # Message consumers
+│   │   └── Producer/      # Message producers
+│   ├── Constants/         # Application constants
+│   ├── Controller/        # HTTP controllers
+│   ├── Exception/         # Custom exceptions
+│   │   └── Handler/       # Exception handlers
+│   ├── Kafka/             # Kafka integration
+│   │   └── Consumer/      # Kafka consumers
+│   ├── Libraries/         # Custom libraries
+│   ├── Listener/          # Event listeners
+│   ├── Middleware/        # HTTP middleware
+│   ├── Model/             # Database models
+│   ├── Process/           # Custom processes
+│   ├── Repositories/      # Data repositories
+│   ├── Request/           # Form requests & validation
+│   ├── Resource/          # API resources
+│   ├── Services/          # Business logic services
+│   └── Traits/            # Reusable traits
+├── bin/                   # Executable scripts
+├── build/                 # Build configuration files
+├── config/                # Configuration files
+│   └── autoload/          # Auto-loaded configurations
+├── languages/             # Internationalization files
+│   ├── en/                # English translations
+│   └── zh_CN/             # Chinese translations
+├── migrations/            # Database migrations
+├── runtime/               # Runtime files (logs, cache)
+├── storage/               # Application storage
+├── test/                  # Test files
+│   └── Cases/             # Test cases
+├── vendor/                # Composer dependencies
+├── .env                   # Environment variables
+├── composer.json          # Composer dependencies
+├── dev.Dockerfile         # Development Dockerfile
+└── prod.Dockerfile        # Production Dockerfile
+```
 
-## Installation
+## Getting Started
 
-Install dependencies using Composer:
+### Installation
+
+1. Clone the repository
+2. Install dependencies:
 
 ```bash
 composer install
 ```
 
-## Running the Application
+3. Copy `.env.example` to `.env` and configure your environment variables
 
-### Using Docker (Recommended)
+### Running with Docker
 
-Start the microservice using Docker Compose:
+#### Development Mode
+
+Build the development image:
 
 ```bash
-docker-compose up
+docker build -f dev.Dockerfile -t <image_name:tag_name> .
 ```
 
-This will start the server on port `9501`, and bind it to all network interfaces. You can then access the API at `http://localhost:9501/`
-
-### Without Docker
-
-Run the server directly using the hyperf command:
+Run the container:
 
 ```bash
+docker run -p <port_http>:9501 -p <port_grpc>:9502 -v ${PWD}:/var/www/html --name <your_container_name> --replace -d <image_name:tag_name>
+```
+
+**Example:**
+```bash
+docker build -f dev.Dockerfile -t hyperf-microservice:dev .
+docker run -p 9501:9501 -p 9502:9502 -v ${PWD}:/var/www/html --name hyperf-dev --replace -d hyperf-microservice:dev
+```
+
+#### Production Mode
+
+Build the production image:
+
+```bash
+docker build -f prod.Dockerfile --build-arg TZ=<your_timezone> --build-arg user=<username> --build-arg uid=<uid_user_default_1000> -t <image_name:tag_name> .
+```
+
+Run the container:
+
+```bash
+docker run -p <port_http>:9501 -p <port_grpc>:9502 --name <your_container_name> --replace -d <image_name:tag_name>
+```
+
+**Example:**
+```bash
+docker build -f prod.Dockerfile --build-arg TZ=Asia/Jakarta --build-arg user=appuser --build-arg uid=1000 -t hyperf-microservice:latest .
+docker run -p 9501:9501 -p 9502:9502 --name hyperf-prod --replace -d hyperf-microservice:latest
+```
+
+### Running Without Docker
+
+Start the server:
+
+```bash
+php bin/hyperf.php start
+```
+
+### Running Commands Inside Container
+
+Execute the `hyperf` command inside a running container:
+
+```bash
+docker exec -it <your_container_name> hyperf <command>
+```
+
+**Note:** The `hyperf` alias is configured to run `php bin/hyperf.php` for convenience.
+
+**Examples:**
+```bash
+# Start the server
+docker exec -it hyperf-dev hyperf start
+
+# Run migrations
+docker exec -it hyperf-dev hyperf migrate
+
+# Generate a controller
+docker exec -it hyperf-dev hyperf gen:controller UserController
+
+# Access container shell
+docker exec -it hyperf-dev sh
+```
+
+## Development
+
+### Routes
+
+Define your API routes in [config/routes.php](config/routes.php).
+
+### Controllers
+
+Create controllers in the `app/Controller` directory. See [app/Controller/IndexController.php](app/Controller/IndexController.php) for an example.
+
+### Configuration
+
+All configuration files are located in the `config/` directory. Auto-loaded configurations are in `config/autoload/`.
+
+### Available Commands
+
+```bash
+# Start the server
 hyperf start
+
+# Run database migrations
+hyperf migrate
+
+# Generate code
+hyperf gen:controller <ControllerName>
+hyperf gen:model <ModelName>
+hyperf gen:middleware <MiddlewareName>
+
+# View all available commands
+hyperf
 ```
 
-Note: When using the provided Dockerfile, the `hyperf` command is aliased to `php bin/hyperf.php` for convenience.
+## Ports
 
-## Development Tips
+- **9501**: HTTP Server
+- **9502**: gRPC Server
 
-- Routes are defined in [config/routes.php](config/routes.php)
-- Controllers are located in the `app/Controller` directory - see [app/Controller/IndexController.php](app/Controller/IndexController.php) for an example
-- Use the `hyperf` command for all framework operations (e.g., `hyperf start`, `hyperf migrate`, `hyperf gen:controller`, etc.)
-- Configuration files are in the `config/` directory
+## Features
 
-## Project Structure
+This boilerplate includes:
 
-This boilerplate provides a clean starting point for building PHP microservices with Hyperf, including:
-- Docker configuration for easy deployment
-- Pre-configured routes and controllers
-- Environment-based configuration
-- Swoole/Swow support for high-performance async operations
+- ✅ Docker support for development and production
+- ✅ Pre-configured directory structure following best practices
+- ✅ AMQP and Kafka integration setup
+- ✅ Database migration support
+- ✅ Request validation
+- ✅ API resource transformers
+- ✅ Repository pattern implementation
+- ✅ Service layer architecture
+- ✅ Exception handling
+- ✅ Middleware support
+- ✅ Internationalization (i18n)
+- ✅ Swoole/Swow for high-performance async operations
+- ✅ gRPC support
+
+## License
+
+[Your License Here]

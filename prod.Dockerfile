@@ -18,10 +18,12 @@ RUN chown -R $user:www-data /run/supervisor
 
 USER $user
 
+RUN echo "alias hyperf='php bin/hyperf.php'" >> /home/$user/.bashrc
+
 WORKDIR /var/www/html
 COPY . .
 
 RUN composer install
 
-EXPOSE ${PORT:-9501}
-
+EXPOSE 9501
+EXPOSE 9502
