@@ -1,6 +1,8 @@
 # Introduction
 
-This is a skeleton application using the Hyperf framework. This application is meant to be used as a starting place for those looking to get their feet wet with Hyperf Framework.
+This is a PHP microservice built with the [Hyperf](https://hyperf.io) framework. Hyperf is a high-performance, coroutine-based PHP framework optimized for building microservices and API applications.
+
+For complete documentation, visit: [https://hyperf.wiki](https://hyperf.wiki)
 
 # Requirements
 
@@ -21,43 +23,49 @@ When you don't want to use Docker as the basis for your running environment, you
  - Redis PHP extension （If you need to use the Redis Client）
  - Protobuf PHP extension （If you need to use the gRPC Server or Client）
 
-# Installation using Composer
+# Getting Started
 
-The easiest way to create a new Hyperf project is to use [Composer](https://getcomposer.org/). If you don't have it already installed, then please install as per [the documentation](https://getcomposer.org/download/).
+## Installation
 
-To create your new Hyperf project:
+Install dependencies using Composer:
 
 ```bash
-composer create-project hyperf/hyperf-skeleton path/to/install
+composer install
 ```
 
-If your development environment is based on Docker you can use the official Composer image to create a new Hyperf project:
+## Running the Application
+
+### Using Docker (Recommended)
+
+Start the microservice using Docker Compose:
 
 ```bash
-docker run --rm -it -v $(pwd):/app composer create-project --ignore-platform-reqs hyperf/hyperf-skeleton path/to/install
-```
-
-# Getting started
-
-Once installed, you can run the server immediately using the command below.
-
-```bash
-cd path/to/install
-php bin/hyperf.php start
-```
-
-Or if in a Docker based environment you can use the `docker-compose.yml` provided by the template:
-
-```bash
-cd path/to/install
 docker-compose up
 ```
 
-This will start the cli-server on port `9501`, and bind it to all network interfaces. You can then visit the site at `http://localhost:9501/` which will bring up Hyperf default home page.
+This will start the server on port `9501`, and bind it to all network interfaces. You can then access the API at `http://localhost:9501/`
 
-## Hints
+### Without Docker
 
-- A nice tip is to rename `hyperf-skeleton` of files like `composer.json` and `docker-compose.yml` to your actual project name.
-- Take a look at `config/routes.php` and `app/Controller/IndexController.php` to see an example of a HTTP entrypoint.
+Run the server directly using the hyperf command:
 
-**Remember:** you can always replace the contents of this README.md file to something that fits your project description.
+```bash
+hyperf start
+```
+
+Note: When using the provided Dockerfile, the `hyperf` command is aliased to `php bin/hyperf.php` for convenience.
+
+## Development Tips
+
+- Routes are defined in [config/routes.php](config/routes.php)
+- Controllers are located in the `app/Controller` directory - see [app/Controller/IndexController.php](app/Controller/IndexController.php) for an example
+- Use the `hyperf` command for all framework operations (e.g., `hyperf start`, `hyperf migrate`, `hyperf gen:controller`, etc.)
+- Configuration files are in the `config/` directory
+
+## Project Structure
+
+This boilerplate provides a clean starting point for building PHP microservices with Hyperf, including:
+- Docker configuration for easy deployment
+- Pre-configured routes and controllers
+- Environment-based configuration
+- Swoole/Swow support for high-performance async operations
