@@ -1,0 +1,37 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Model;
+
+use Hyperf\Database\Model\SoftDeletes;
+
+/**
+ */
+class Role extends Model
+{
+    use SoftDeletes;
+    /**
+     * The table associated with the model.
+     */
+    protected ?string $table = 'Roles';
+
+    /**
+     * The attributes that are mass assignable.
+     */
+    protected array $fillable = [
+        'name',
+        'description',
+    ];
+
+    /**
+     * The attributes that should be cast to native types.
+     */
+    protected array $casts = [];
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'User_Roles', 'role_id', 'user_id');
+    }
+    
+}
