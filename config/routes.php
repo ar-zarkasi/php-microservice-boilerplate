@@ -26,8 +26,8 @@ Router::addGroup('/v1', function (){
 
     // Add more routes here
    Router::addGroup('/users', function (){
-        Router::get('/', [UsersController::class, 'index']);
-        Router::addRoute(['GET'], '/{id:\w+}', [UsersController::class, 'show']);
-        Router::addRoute(['POST'], '/{id:\w+}', [UsersController::class, 'update']);
+        Router::get('', [UsersController::class, 'index']);
+        Router::addRoute(['GET'], '/{id:[0-9a-f\-]+}', [UsersController::class, 'show']);
+        Router::addRoute(['POST'], '/{id:[0-9a-f\-]+}', [UsersController::class, 'update']);
    }, ['middleware' => [AuthMiddleware::class]]);
 });

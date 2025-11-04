@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Traits;
 
 use App\Model\User;
+use App\Services\AuthServices;
 use Hyperf\Context\Context;
 use Hyperf\Redis\Redis;
 use function Hyperf\Support\env;
@@ -27,33 +28,20 @@ trait AuthenticatesUsers
     /**
      * Login a user and generate a token
      */
-    protected function login(User $user, bool $remember = false): string
+    protected function login(array $user, bool $remember = false): string
     {
-        $token = $this->generateToken($user);
+        $token = $this->generateToken($user['user_id']);
         $ttl = $remember ? 30 * 24 * 60 * 60 : 24 * 60 * 60; // 30 days or 1 day
-
+        
         // Store token in Redis
         $redis = $this->getRedis();
-        $redis->setex("auth:token:{$token}", $ttl, (string)$user->id);
+        $redis->setex("auth:token:{$token}", $ttl, (string)$user['user_id']);
 
         // Set user in current context
         Context::set(self::USER_CONTEXT_KEY, $user);
         Context::set(self::TOKEN_CONTEXT_KEY, $token);
 
         return $token;
-    }
-
-    /**
-     * Login using user ID
-     */
-    protected function loginUsingId(string $userId, bool $remember = false): ?string
-    {
-        $user = User::find($userId);
-        if (!$user) {
-            return null;
-        }
-
-        return $this->login($user, $remember);
     }
 
     /**
@@ -127,7 +115,7 @@ trait AuthenticatesUsers
     /**
      * Authenticate user by token
      */
-    protected function authenticateByToken(string $token): ?User
+    protected function authenticateByToken(string $token, AuthServices $authServices): ?User
     {
         $redis = $this->getRedis();
         $userId = $redis->get("auth:token:{$token}");
@@ -136,7 +124,7 @@ trait AuthenticatesUsers
             return null;
         }
 
-        $user = User::find($userId);
+        $user = $authServices->userRepository->get_user_by_id($userId);
 
         if ($user) {
             $this->setUser($user);
@@ -249,10 +237,10 @@ trait AuthenticatesUsers
     /**
      * Generate a secure random token
      */
-    private function generateToken(User $user): string
+    private function generateToken(string $user_id): string
     {
         $payload = base64_encode(json_encode([
-            'user_id' => $user->id,
+            'user_id' => $user_id,
             'timestamp' => time(),
             'random' => bin2hex(random_bytes(16))
         ]));
@@ -274,5 +262,20 @@ trait AuthenticatesUsers
     private function getRedis(): Redis
     {
         return \Hyperf\Support\make(Redis::class);
+    }
+
+    public function hasLogin(string $user_id): string | null
+    {
+        $redis = $this->getRedis();
+        $storedToken = $redis->get('auth:attempt:'.$user_id);
+
+        return $storedToken ?: null;
+    }
+
+    public function stampLogin(string $user_id, string $token, bool $remember = false): void
+    {
+        $redis = $this->getRedis();
+        $ttl = $remember ? 30 * 24 * 60 * 60 : 24 * 60 * 60; // 30 days or 1 day
+        $redis->set('auth:attempt:'.$user_id, $token, $ttl);
     }
 }

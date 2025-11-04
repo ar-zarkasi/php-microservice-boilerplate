@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Model;
 
+use App\Traits\UuidModel;
 use Hyperf\Database\Model\SoftDeletes;
 
 /**
  */
 class Role extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, UuidModel;
     /**
      * The table associated with the model.
      */
@@ -20,6 +21,7 @@ class Role extends Model
      * The attributes that are mass assignable.
      */
     protected array $fillable = [
+        'id',
         'name',
         'description',
     ];

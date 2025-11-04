@@ -4,8 +4,9 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Constants\ErrorCode;
+use App\Helpers\PasswordHelper;
 use App\Repositories\{ UserRepository };
-use App\Resource\UserCollection;
+use App\Resource\UserResource;
 use App\Traits\AuthenticatesUsers;
 
 class AuthServices extends BaseService
@@ -36,7 +37,7 @@ class AuthServices extends BaseService
             ];
         }
 
-        if (!password_verify($password, $user->password)) {
+        if (!PasswordHelper::verify($password, $user->password)) {
             return [
                 'error' => 'Invalid credentials',
                 'code' => ErrorCode::VALIDATION_ERROR,
@@ -46,16 +47,19 @@ class AuthServices extends BaseService
         }
 
         // Use the trait's login method to authenticate and generate token
-        $token = $this->login($user, $remember);
-
+        $userData = (new UserResource($user))->toArray();
+        $token = $this->hasLogin($userData['user_id']);
+        if (!$token) {
+            $token = $this->login($userData, $remember);
+            $this->stampLogin($userData['user_id'], $token);
+        }
+        $userData['token'] = $token;
+        
         return [
             'error' => null,
             'code' => 200,
             'message' => 'Login successful.',
-            'data' => [
-                'user' => $user,
-                'token' => $token,
-            ],
+            'data' => $userData,
         ];
     }
 
@@ -91,13 +95,13 @@ class AuthServices extends BaseService
             ];
         }
 
-        $user = (new UserCollection($user))->jsonSerialize();
+        $userData = (new UserResource($user))->toArray();
 
         return [
             'error' => null,
             'code' => 200,
             'message' => 'User retrieved successfully.',
-            'data' => $user,
+            'data' => $userData,
         ];
     }
 
@@ -106,12 +110,12 @@ class AuthServices extends BaseService
      */
     public function validateToken(string $token): array
     {
-        $user = $this->authenticateByToken($token);
+        $user = $this->authenticateByToken($token, $this);
 
         if (!$user) {
             return [
                 'error' => 'Invalid token',
-                'code' => ErrorCode::UNAUTHORIZED_ERROR,
+                'code' => ErrorCode::FORBIDDEN_ERROR,
                 'message' => 'The provided token is invalid or expired.',
                 'data' => null,
             ];
@@ -122,33 +126,6 @@ class AuthServices extends BaseService
             'code' => 200,
             'message' => 'Token is valid.',
             'data' => $user,
-        ];
-    }
-
-    /**
-     * Attempt login with credentials array
-     */
-    public function attemptLogin(array $credentials, bool $remember = false): array
-    {
-        $token = $this->attempt($credentials, $remember);
-
-        if (!$token) {
-            return [
-                'error' => 'Invalid credentials',
-                'code' => ErrorCode::VALIDATION_ERROR,
-                'message' => 'The provided credentials are incorrect.',
-                'data' => null,
-            ];
-        }
-
-        return [
-            'error' => null,
-            'code' => 200,
-            'message' => 'Login successful.',
-            'data' => [
-                'user' => $this->user(),
-                'token' => $token,
-            ],
         ];
     }
 

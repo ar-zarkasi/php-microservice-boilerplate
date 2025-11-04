@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Middleware;
 
+use App\Constants\ErrorCode;
 use App\Services\AuthServices;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -31,20 +32,20 @@ class AuthMiddleware implements MiddlewareInterface
         if (empty($authorization)) {
             return $this->response->json([
                 'error' => 'Unauthorized',
-                'code' => 401,
-                'message' => 'Authorization header is missing.',
+                'code' => ErrorCode::UNAUTHORIZED_ERROR,
+                'message' => 'Your Not Authorized to access this resource.',
                 'data' => null,
-            ])->withStatus(401);
+            ])->withStatus(ErrorCode::UNAUTHORIZED_ERROR);
         }
 
         // Extract Bearer token
         if (!preg_match('/Bearer\s+(.*)$/i', $authorization, $matches)) {
             return $this->response->json([
                 'error' => 'Unauthorized',
-                'code' => 401,
-                'message' => 'Invalid authorization header format. Use: Bearer {token}',
+                'code' => ErrorCode::UNAUTHORIZED_ERROR,
+                'message' => 'Invalid authorization',
                 'data' => null,
-            ])->withStatus(401);
+            ])->withStatus(ErrorCode::UNAUTHORIZED_ERROR);
         }
 
         $token = $matches[1];
@@ -53,7 +54,7 @@ class AuthMiddleware implements MiddlewareInterface
         $result = $this->authServices->validateToken($token);
 
         if ($result['error']) {
-            return $this->response->json($result)->withStatus(401);
+            return $this->response->json($result)->withStatus(ErrorCode::FORBIDDEN_ERROR);
         }
 
         // Continue to the next middleware/controller

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Model;
 
+use App\Traits\UuidModel;
 use Hyperf\Database\Model\SoftDeletes;
 
 /**
@@ -21,7 +22,7 @@ use Hyperf\Database\Model\SoftDeletes;
  */
 class User extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, UuidModel;
     /**
      * The table associated with the model.
      */
@@ -31,9 +32,11 @@ class User extends Model
      * The attributes that are mass assignable.
      */
     protected array $fillable = [
+        'id',
         'name',
         'email',
         'phone',
+        'password',
         'email_verified_at',
         'avatar',
     ];
@@ -49,6 +52,6 @@ class User extends Model
 
     public function roles()
     {
-        return $this->belongsToMany(Role::class, 'User_Roles', 'user_id', 'role_id');
+        return $this->belongsToMany(Role::class, 'user_roles', 'user_id', 'role_id');
     }
 }
