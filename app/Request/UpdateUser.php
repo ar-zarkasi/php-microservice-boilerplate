@@ -22,7 +22,7 @@ class UpdateUser extends FormRequest
     public function rules(): array
     {
         return [
-            'avatar' => 'nullable|file',
+            'avatar' => 'nullable|file|mimes:jpeg,jpg,png|max:2048',
             'phone' => 'nullable|string|min:10|max:15',
             'roles' => 'nullable|array',
             'roles.*.id' => 'required_if:roles|string|exists:Roles,id',
