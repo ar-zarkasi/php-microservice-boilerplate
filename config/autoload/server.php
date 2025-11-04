@@ -21,7 +21,7 @@ return [
             'name' => 'http',
             'type' => Server::SERVER_HTTP,
             'host' => '0.0.0.0',
-            'port' => env('HTTP_SERVER_PORT', 9501),
+            'port' => (int) env('HTTP_SERVER_PORT', 9501),
             'sock_type' => SWOOLE_SOCK_TCP,
             'callbacks' => [
                 Event::ON_REQUEST => [Hyperf\HttpServer\Server::class, 'onRequest'],
@@ -35,7 +35,7 @@ return [
             'name' => 'grpc',
             'type' => Server::SERVER_HTTP,
             'host' => '0.0.0.0',
-            'port' => env('GRPC_SERVER_PORT',9502),
+            'port' => (int) env('GRPC_SERVER_PORT',9502),
             'sock_type' => SWOOLE_SOCK_TCP,
             'callbacks' => [
                 Event::ON_REQUEST => [\Hyperf\GrpcServer\Server::class, 'onRequest'],
