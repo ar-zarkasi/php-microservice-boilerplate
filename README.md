@@ -207,7 +207,3 @@ This boilerplate includes:
 - ✅ Internationalization (i18n)
 - ✅ Swoole/Swow for high-performance async operations
 - ✅ gRPC support
-
-## License
-
-[Your License Here]
