@@ -14,7 +14,7 @@ use Hyperf\Server\Server;
 use Swoole\Constant;
 use function Hyperf\Support\env;
 
-return [
+$settings = [
     'mode' => SWOOLE_PROCESS,
     'servers' => [
         [
@@ -29,16 +29,6 @@ return [
             'options' => [
                 // Whether to enable request lifecycle event
                 'enable_request_lifecycle' => false,
-            ],
-        ],
-        [
-            'name' => 'grpc',
-            'type' => Server::SERVER_HTTP,
-            'host' => '0.0.0.0',
-            'port' => (int) env('GRPC_SERVER_PORT',9502),
-            'sock_type' => SWOOLE_SOCK_TCP,
-            'callbacks' => [
-                Event::ON_REQUEST => [\Hyperf\GrpcServer\Server::class, 'onRequest'],
             ],
         ],
     ],
@@ -59,3 +49,19 @@ return [
         Event::ON_WORKER_EXIT => [Hyperf\Framework\Bootstrap\WorkerExitCallback::class, 'onWorkerExit'],
     ],
 ];
+
+$env_grpc = env('GRPC_SERVER_PORT');
+if ($env_grpc === '') {
+    array_push($settings['servers'], [
+        'name' => 'grpc',
+        'type' => Server::SERVER_HTTP,
+        'host' => '0.0.0.0',
+        'port' => (int) env('GRPC_SERVER_PORT',9502),
+        'sock_type' => SWOOLE_SOCK_TCP,
+        'callbacks' => [
+            Event::ON_REQUEST => [\Hyperf\GrpcServer\Server::class, 'onRequest'],
+        ],
+    ]);
+}
+
+return $settings;

@@ -20,7 +20,7 @@ $client = env('KAFKA_CLIENT_ID', '');
 
 return [
     'default' => [
-        'enable' => true,
+        'enable' => $client !== '',
         'connect_timeout' => -1,
         'send_timeout' => -1,
         'recv_timeout' => -1,

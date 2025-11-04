@@ -21,14 +21,14 @@ class LoginController extends BaseController
     }
     public function index(LoginRequest $request)
     {
-        if (!$request->validated()) {
-            $validationErrors = $request->errors();
-            return $this->send(null, $validationErrors, ErrorCode::VALIDATION_ERROR);
-        }
+        // Validation happens automatically via FormRequest
+        // If validation fails, it will throw ValidationException
+        // which is caught by ValidationExceptionHandler
+        $validated = $request->validated();
 
-        $username = $request->input('username');
-        $password = $request->input('password');
-        $rememberMe = $request->input('remember_me', false);
+        $username = $validated['username'];
+        $password = $validated['password'];
+        $rememberMe = $validated['remember_me'] ?? false;
 
         $login = $this->auth->handleLogin($username, $password, $rememberMe);
         if ($login['error']) {

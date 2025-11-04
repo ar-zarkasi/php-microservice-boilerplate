@@ -25,7 +25,7 @@ class User extends Model
     /**
      * The table associated with the model.
      */
-    protected ?string $table = 'Users';
+    protected ?string $table = 'users';
 
     /**
      * The attributes that are mass assignable.

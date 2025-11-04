@@ -14,7 +14,7 @@ class Role extends Model
     /**
      * The table associated with the model.
      */
-    protected ?string $table = 'Roles';
+    protected ?string $table = 'roles';
 
     /**
      * The attributes that are mass assignable.
