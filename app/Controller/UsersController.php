@@ -44,10 +44,9 @@ class UsersController extends BaseController
 
         $data = $request->all();
 
-        // Update user logic here
-        $user = $this->userServices->update_user($id, $data, $request->file('avatar'));
+        $responseData = $this->userServices->update_user($id, $data, $request->file('avatar'));
 
-        return $this->send($user, 'User updated successfully.', SuccessCode::SUCCESS);
+        return $this->send($responseData['data'], 'User updated successfully.', SuccessCode::SUCCESS);
     }
 
 }

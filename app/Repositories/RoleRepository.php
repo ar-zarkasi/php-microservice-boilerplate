@@ -32,4 +32,9 @@ class RoleRepository extends BaseRepository implements BaseInterface
         return $query->get();
     }
 
+    public function sync_roles(\App\Model\User $user, array $roleIds): void
+    {
+        $user->roles()->sync($roleIds);
+    }
+
 }

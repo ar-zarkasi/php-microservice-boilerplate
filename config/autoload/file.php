@@ -20,7 +20,7 @@ use Hyperf\Filesystem\Adapter\S3AdapterFactory;
 use function Hyperf\Support\env;
 
 return [
-    'default' => 'local',
+    'default' => env('DISK_DEFAULT','local'),
     'storage' => [
         'local' => [
             'driver' => LocalAdapterFactory::class,
